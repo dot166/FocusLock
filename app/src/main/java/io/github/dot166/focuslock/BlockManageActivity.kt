@@ -20,7 +20,7 @@ import androidx.core.net.toUri
 import io.github.dot166.focuslock.utils.BlockUtils
 
 
-class MainActivity : jActivity() {
+class BlockManageActivity : jActivity() {
     private lateinit var appsList: LinearLayout
     private var selectedApps = mutableListOf<String>()
 
