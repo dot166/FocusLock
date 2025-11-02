@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:text="Stay focused. You got this."
+    <com.google.android.material.textview.MaterialTextView
+        android:text="@string/stay_focused_you_got_this"
         android:textSize="22sp"
         android:layout_marginBottom="24dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/exitButton"
         android:text="@string/exit"
         android:layout_width="wrap_content"

@@ -7,4 +7,5 @@
     <string name="scrntime_usage_percent">"<xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> per cent"</string>
     <string name="view_app_usage">View App Usage</string>
     <string name="manage_blocked_apps_and_app_limits">Manage blocked apps and app limits</string>
+    <string name="stay_focused_you_got_this">Stay focused. You got this.</string>
 </resources>
