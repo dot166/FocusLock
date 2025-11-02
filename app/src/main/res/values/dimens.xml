@@ -15,6 +15,6 @@
 -->
 
 <resources>
-    <item name="privhub_label_radius_scalar" format="float" type="dimen">1.1</item>
-    <dimen name="privhub_circle_stroke_width">25dp</dimen>
+    <item name="scrntime_label_radius_scalar" format="float" type="dimen">1.1</item>
+    <dimen name="scrntime_circle_stroke_width">25dp</dimen>
 </resources>

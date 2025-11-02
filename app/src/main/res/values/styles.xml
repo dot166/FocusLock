@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="PrivacyDashboardGraphicLabel"
+    <style name="ScreenTimeGraphicLabel"
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
         <item name="android:textSize">16sp</item>

@@ -14,6 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/j.Theme">
 
+        <activity android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".BlockScreenActivity"
             android:excludeFromRecents="true"
             android:taskAffinity=""
@@ -22,16 +30,9 @@
             android:turnScreenOn="true" />
 
         <activity android:name=".BlockManageActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="true"/>
 
         <service android:name=".AppBlockService"/>
-
-        <activity android:name=".PrefActivity" android:exported="true"/>
     </application>
 
 </manifest>
