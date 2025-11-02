@@ -10,7 +10,6 @@ import android.os.Looper
 import android.util.Log
 import androidx.preference.PreferenceManager
 import io.github.dot166.focuslock.ui.activity.BlockScreenActivity
-import java.util.concurrent.TimeUnit
 
 class AppBlockService : Service() {
     private val handler = Looper.myLooper()?.let { Handler(it) }
@@ -19,20 +18,6 @@ class AppBlockService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         blockedApps = intent?.getStringArrayListExtra("blockedApps") ?: PreferenceManager.getDefaultSharedPreferences(this).getStringSet("blockedApps",
             mutableSetOf<String>())!!.toList()
-        val usm = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
-        val endTime = System.currentTimeMillis()
-        val startTime = endTime - TimeUnit.MINUTES.toMillis(1)  // Last minute's usage stats
-
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
-        if (stats != null && stats.isNotEmpty()) {
-            val recentStats = stats.maxByOrNull { it.lastTimeUsed }
-            if (recentStats != null && blockedApps.contains(recentStats.packageName)) {
-                // Trigger blocking
-                val intent = Intent(this@AppBlockService, BlockScreenActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)  // Start your blocking activity
-            }
-        }
         handler?.post(checkRunnable)
         Log.i(javaClass.simpleName, "Service Started")
         return START_STICKY
