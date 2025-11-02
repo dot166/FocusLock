@@ -1,14 +1,14 @@
-package io.github.dot166.focuslock.ui
+package io.github.dot166.focuslock.ui.widget
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.WindowManager
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.view.size
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import androidx.core.view.size
 
 /**
  * Encapsulates a [CompositeCircleView], labeling each of its colored partial circles.

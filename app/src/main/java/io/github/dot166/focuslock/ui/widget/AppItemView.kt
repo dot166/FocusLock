@@ -1,4 +1,4 @@
-package io.github.dot166.focuslock
+package io.github.dot166.focuslock.ui.widget
 
 import android.content.Context
 import android.util.AttributeSet
@@ -7,6 +7,7 @@ import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textview.MaterialTextView
+import io.github.dot166.focuslock.R
 
 class AppItemView @JvmOverloads constructor(
     context: Context,

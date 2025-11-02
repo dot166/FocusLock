@@ -1,7 +1,8 @@
-package io.github.dot166.focuslock.ui
+package io.github.dot166.focuslock.ui.preference
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.widget.TextView
@@ -10,6 +11,9 @@ import androidx.annotation.StyleRes
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import io.github.dot166.focuslock.R
+import io.github.dot166.focuslock.ui.activity.AppUsageActivity
+import io.github.dot166.focuslock.ui.widget.CompositeCircleView
+import io.github.dot166.focuslock.ui.widget.CompositeCircleViewLabeler
 
 /**
  * A Preference for the screen time graphic.
@@ -71,8 +75,6 @@ class ScreenTimeGraphicPreference : Preference {
         // Set center text.
         val centerLabel = TextView(context)
         centerLabel.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-
-        centerLabel.text = context.getString(R.string.scrntime_label_24h)
         centerLabel.setTextAppearance(R.style.ScreenTimeGraphicLabel)
 
         val colourOne =
@@ -119,8 +121,8 @@ class ScreenTimeGraphicPreference : Preference {
             val hours = (total / (1000 * 60 * 60))
             val minutes = ((total % (1000 * 60 * 60)) / (1000 * 60))
             val seconds = ((total % (1000 * 60)) / 1000)
-            val timeString = String.format("Today\n%02dh%02dm%02ds", hours, minutes, seconds)
-            centerLabel.text = timeString
+            val timeString = String.format("\n%02dh%02dm%02ds", hours, minutes, seconds)
+            centerLabel.text = context.getString(R.string.scrntime_label_centre, timeString)
             colors = intArrayOf(
                 colourOne,
                 colourTwo,
@@ -151,6 +153,9 @@ class ScreenTimeGraphicPreference : Preference {
         ccvl.configure(R.id.composite_circle_view, centerLabel, labels, labelRadiusScalar)
         // Start at angle 300 (top right) to allow for small segments.
         ccv.configure(300f, counts, colors, circleStrokeWidth, labels)
+        holder.findViewById(R.id.more_button).setOnClickListener {
+            context.startActivity(Intent(context, AppUsageActivity::class.java))
+        }
     }
 
     private fun getUsageCount(group: String?): Pair<Int, String> {

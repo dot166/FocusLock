@@ -1,44 +1,46 @@
-package io.github.dot166.focuslock
+package io.github.dot166.focuslock.ui.activity
 
 import android.annotation.SuppressLint
-import android.app.AppOpsManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.PowerManager
-import android.os.Process
 import android.provider.Settings
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.edit
-import androidx.preference.PreferenceManager
-import com.google.android.material.snackbar.Snackbar
-import io.github.dot166.jlib.app.jActivity
-import java.util.Locale.getDefault
 import androidx.core.net.toUri
+import androidx.preference.PreferenceManager
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
+import io.github.dot166.focuslock.AppBlockService
+import io.github.dot166.focuslock.R
+import io.github.dot166.focuslock.ui.widget.AppItemView
 import io.github.dot166.focuslock.utils.BlockUtils
+import io.github.dot166.focuslock.utils.UsageUtils.hasUsageAccess
+import java.util.Locale
 
-
-class BlockManageActivity : jActivity() {
+class BlockManageActivity : CoreActivity() {
     private lateinit var appsList: LinearLayout
     private var selectedApps = mutableListOf<String>()
 
     @SuppressLint("BatteryLife")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_manage_block)
+        configureToolBar(findViewById(R.id.toolbar))
 
-        selectedApps.addAll(PreferenceManager.getDefaultSharedPreferences(this).getStringSet("blockedApps",
+        selectedApps.addAll(
+            PreferenceManager.getDefaultSharedPreferences(this).getStringSet("blockedApps",
             mutableSetOf<String>())!!.toList())
 
         appsList = findViewById(R.id.appsList)
-        val startButton = findViewById<Button>(R.id.startButton)
+        val startButton = findViewById<MaterialButton>(R.id.startButton)
 
         displayInstalledApps()
 
         startButton.setOnClickListener {
-            if (!hasUsageAccess()) {
+            if (!hasUsageAccess(this)) {
                 startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                 Toast.makeText(this, "Please grant Usage Access permission", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
@@ -89,7 +91,7 @@ class BlockManageActivity : jActivity() {
         val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
         apps.sortBy {
-            packageManager.getApplicationLabel(it).toString().lowercase(getDefault())
+            packageManager.getApplicationLabel(it).toString().lowercase(Locale.getDefault())
         }
 
         for (appInfo in apps) {
@@ -111,15 +113,5 @@ class BlockManageActivity : jActivity() {
                 appsList.addView(appItemView)
             }
         }
-    }
-
-    private fun hasUsageAccess(): Boolean {
-        val appOps = getSystemService(APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            packageName
-        )
-        return mode == AppOpsManager.MODE_ALLOWED
     }
 }

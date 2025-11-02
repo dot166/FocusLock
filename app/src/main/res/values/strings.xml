@@ -2,8 +2,8 @@
     <string name="app_name">FocusLock</string>
     <string name="select_apps_to_block">Select apps to block:</string>
     <string name="start_blocking_apps">Start Blocking Apps</string>
-    <string name="exit">Exit to Launcher3</string>
-    <string name="scrntime_label_24h">"Past\n24 hours"</string>
+    <string name="exit">Exit to <xliff:g id="LAUNCHER_APP_NAME">%1$s</xliff:g></string>
+    <string name="scrntime_label_centre">"Today <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="scrntime_usage_percent">"<xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> per cent"</string>
     <string name="view_app_usage">View App Usage</string>
     <string name="manage_blocked_apps_and_app_limits">Manage blocked apps and app limits</string>

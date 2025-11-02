@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/j.Theme">
 
-        <activity android:name=".MainActivity"
+        <activity android:name=".ui.activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,14 +23,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".BlockScreenActivity"
+        <activity android:name=".ui.activity.BlockScreenActivity"
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:launchMode="singleInstance"
             android:showOnLockScreen="true"
             android:turnScreenOn="true" />
 
-        <activity android:name=".BlockManageActivity"
+        <activity android:name=".ui.activity.BlockManageActivity"
+            android:exported="true"/>
+
+        <activity android:name=".ui.activity.AppUsageActivity"
             android:exported="true"/>
 
         <service android:name=".AppBlockService"/>

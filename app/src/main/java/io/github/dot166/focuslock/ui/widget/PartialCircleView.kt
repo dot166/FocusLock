@@ -1,4 +1,4 @@
-package io.github.dot166.focuslock.ui
+package io.github.dot166.focuslock.ui.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
