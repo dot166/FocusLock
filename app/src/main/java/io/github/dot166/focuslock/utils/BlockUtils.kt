@@ -8,7 +8,7 @@ object BlockUtils {
 
     val blockList = arrayOf("com.google.android.apps.restore", "com.google.android.dialer", "com.android.dialer", "com.android.settings", "com.android.angle", "com.android.traceur", "com.android.vending", "app.grapheneos.apps", "com.google.android.accessibility.switchaccess")
 
-    val allowList = arrayOf("com.google.android.gms", "app.grapheneos.gmscompat", "com.android.egg", "jos.system", "com.android.captiveportallogin", "com.android.stk", "app.vanadium.webview")
+    val allowList = arrayOf("com.google.android.gms", "app.grapheneos.gmscompat", "com.android.egg", "com.android.captiveportallogin", "com.android.stk", "app.vanadium.webview")
 
     fun isAllowedToMonitor(ctx: Context, pName: String, isMonitoring: Boolean = false): Boolean {
         if (pName == ctx.packageName) return false

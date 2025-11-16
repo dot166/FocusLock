@@ -1,117 +1,155 @@
 package io.github.dot166.focuslock.ui.activity
 
-import android.annotation.SuppressLint
-import android.content.Intent
+import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.view.View
+import android.widget.AdapterView
 import androidx.core.content.edit
-import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.snackbar.Snackbar
-import io.github.dot166.focuslock.AppBlockService
-import io.github.dot166.focuslock.R
-import io.github.dot166.focuslock.ui.widget.AppItemView
+import com.android.settingslib.preference.PreferenceFragment
+import io.github.dot166.focuslock.core.RestrictedApp
+import io.github.dot166.focuslock.core.findDuration
+import io.github.dot166.focuslock.core.getDuration
+import io.github.dot166.focuslock.core.getPosition
 import io.github.dot166.focuslock.utils.BlockUtils
-import io.github.dot166.focuslock.utils.UsageUtils.hasUsageAccess
+import io.github.dot166.jlib.app.jConfigActivity
 import java.util.Locale
 
-class BlockManageActivity : CoreActivity() {
-    private lateinit var appsList: LinearLayout
-    private var selectedApps = mutableListOf<String>()
+class BlockManageActivity : jConfigActivity() {
+    override fun preferenceFragment(): PreferenceFragment {
+        return BlockManageFragment()
+    }
 
-    @SuppressLint("BatteryLife")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_manage_block)
-        configureToolBar(findViewById(R.id.toolbar))
+    class BlockManageFragment : PreferenceFragment() {
 
-        selectedApps.addAll(
-            PreferenceManager.getDefaultSharedPreferences(this).getStringSet("blockedApps",
-            mutableSetOf<String>())!!.toList())
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            preferenceScreen = preferenceManager.createPreferenceScreen(requireContext())
+        }
 
-        appsList = findViewById(R.id.appsList)
-        val startButton = findViewById<MaterialButton>(R.id.startButton)
+        override fun onResume() {
+            super.onResume()
+            preferenceScreen.removeAll()
 
-        displayInstalledApps()
+            val allApps = mutableListOf<RestrictedApp>()
+            allApps.addAll(
+                PreferenceManager.getDefaultSharedPreferences(requireContext()).getStringSet("blockedApps",
+                    mutableSetOf<String>())!!.toList()
+            )
 
-        startButton.setOnClickListener {
-            if (!hasUsageAccess(this)) {
-                startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                Toast.makeText(this, "Please grant Usage Access permission", Toast.LENGTH_LONG).show()
-                return@setOnClickListener
+            val packageManager = requireContext().packageManager
+            val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+
+            apps.filter {
+                BlockUtils.isAllowedToMonitor(requireContext(), it.packageName)
             }
-            if (!Settings.canDrawOverlays(this)) {
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-                Toast.makeText(this, "Please grant overlay permission", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+
+            apps.sortBy {
+                packageManager.getApplicationLabel(it).toString().lowercase(Locale.getDefault())
             }
-            val packageName = applicationContext.packageName
-            val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                val intent = Intent()
-                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.setData(("package:$packageName").toUri())
-                startActivity(intent)
-                return@setOnClickListener
+
+            allApps.sortBy {
+                packageManager.getApplicationLabel(packageManager.getApplicationInfo(it.packageName, 0)).toString().lowercase(Locale.getDefault())
             }
-            selectedApps.clear()
-            for (i in 0 until appsList.childCount) {
-                val appItemView = appsList.getChildAt(i) as AppItemView
-                if (appItemView.checkBox.isChecked) {
-                    selectedApps.add(appItemView.appPackageNameView.text.toString())
+
+            var isUpToDate = true
+
+            for (i in 0 until apps.size) {
+                if (apps.size != allApps.size) {
+                    isUpToDate = false
+                    break
+                }
+                val appInfo = apps[i]
+                val app = allApps[i]
+                if (appInfo.packageName != app.packageName) {
+                    isUpToDate = false
                 }
             }
 
-            if (selectedApps.isEmpty()) {
-                Snackbar.make(startButton, "Please select at least one app to block.", Snackbar.LENGTH_SHORT).show()
-            } else {
-                PreferenceManager.getDefaultSharedPreferences(this).edit {
-                    putStringSet(
-                        "blockedApps",
-                        selectedApps.toSet()
-                    )
+            if (!isUpToDate) {
+                val savedRestrictedApps = mutableListOf<RestrictedApp>()
+                for (i in 0 until allApps.size) {
+                    val app = allApps[i]
+                    if (app.allowedTimeInMinutes > -1) {
+                        savedRestrictedApps.add(app)
+                    }
                 }
-                val intent = Intent(this, AppBlockService::class.java)
-                intent.putStringArrayListExtra("blockedApps", ArrayList(selectedApps))
-                startService(intent)
-                Snackbar.make(startButton, "App Blocker started!", Snackbar.LENGTH_SHORT).show()
+                allApps.clear()
+                allApps.addAll(savedRestrictedApps)
+                allApps.addAll(apps, requireContext())
+                allApps.sortBy {
+                    packageManager.getApplicationLabel(packageManager.getApplicationInfo(it.packageName, 0)).toString().lowercase(Locale.getDefault())
+                }
+            }
+
+            for (app in allApps) {
+                val appItemPref = app.getItemPreference(requireContext())
+                appItemPref.setSelection(getPosition(findDuration(app.allowedTimeInMinutes)))
+                appItemPref.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        allApps.update(appItemPref.summary.toString(), getDuration(position).minutes)
+
+                        PreferenceManager.getDefaultSharedPreferences(requireContext()).edit {
+                            putStringSet(
+                                "blockedApps",
+                                allApps.toStringSet()
+                            )
+                        }
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                        // Nothing to implement
+                    }
+                })
+                preferenceScreen.addPreference(appItemPref)
             }
         }
     }
 
-    private fun displayInstalledApps() {
-        val packageManager = packageManager
-        val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+}
 
-        apps.sortBy {
-            packageManager.getApplicationLabel(it).toString().lowercase(Locale.getDefault())
-        }
+private fun MutableList<RestrictedApp>.toStringSet(): MutableSet<String> {
+    val stringSet = mutableSetOf<String>()
+    for (i in 0 until size) {
+        stringSet.add(get(i).toString())
+    }
+    return stringSet
+}
 
-        for (appInfo in apps) {
-            if (BlockUtils.isAllowedToMonitor(this, appInfo.packageName)) {
-                val appItemView = AppItemView(this)
-                appItemView.appPackageNameView.text = appInfo.packageName
-                appItemView.appNameView.text = packageManager.getApplicationLabel(appInfo)
-                appItemView.appIconView.setImageDrawable(packageManager.getApplicationIcon(appInfo))
-                if (selectedApps.contains(appInfo.packageName)) {
-                    appItemView.checkBox.isChecked = true
-                }
-                appItemView.checkBox.setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        selectedApps.add(appInfo.packageName)
-                    } else {
-                        selectedApps.remove(appInfo.packageName)
-                    }
-                }
-                appsList.addView(appItemView)
+private fun MutableList<RestrictedApp>.addAll(elements: List<String>) {
+    for (i in 0 until elements.size) {
+        add(RestrictedApp.fromString(elements[i]))
+    }
+}
+
+private fun MutableList<RestrictedApp>.findByPackageName(pName: String): RestrictedApp {
+    for (i in 0 until size) {
+        if (get(i).packageName == pName)
+            return get(i)
+    }
+    throw IllegalArgumentException()
+}
+
+private fun MutableList<RestrictedApp>.update(pName: String, allowedTimeInMinutes: Long) {
+    findByPackageName(pName).allowedTimeInMinutes = allowedTimeInMinutes
+}
+
+private fun MutableList<RestrictedApp>.addAll(elements: List<ApplicationInfo>, ctx: Context) {
+    for (i in 0 until elements.size) {
+        if (BlockUtils.isAllowedToMonitor(ctx, elements[i].packageName)) {
+            var hasInList = false
+            for (j in 0 until size) {
+                if (elements[i].packageName == get(j).packageName)
+                    hasInList = true
             }
+            if (!hasInList)
+                add(RestrictedApp(elements[i].packageName, -1))
         }
     }
 }

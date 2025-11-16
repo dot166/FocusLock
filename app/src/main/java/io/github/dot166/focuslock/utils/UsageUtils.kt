@@ -57,7 +57,7 @@ object UsageUtils {
         for (entry in foregroundEventTimeMap.entries) {
             val packageName = entry.key
             val startTime: Long = entry.value!!
-            val timeInForeground = endTime - startTime
+            val timeInForeground = System.currentTimeMillis() - startTime
             val currentTotal: Long = appUsageTimeMap.getOrDefault(packageName, 0L)!!
             appUsageTimeMap.put(packageName, currentTotal + timeInForeground)
         }
