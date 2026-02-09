@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 
 object BlockUtils {
 
-    val blockList = arrayOf("com.google.android.apps.restore", "com.google.android.dialer", "com.android.dialer", "com.android.settings", "com.android.angle", "com.android.traceur", "com.android.vending", "app.grapheneos.apps", "com.google.android.accessibility.switchaccess")
+    val blockList = arrayOf("com.google.android.apps.restore", "com.google.android.dialer", "com.android.dialer", "com.android.settings", "com.android.angle", "com.android.traceur", "com.android.vending", "app.grapheneos.apps", "com.google.android.accessibility.switchaccess", "com.android.deskclock")
 
     val allowList = arrayOf("com.google.android.gms", "app.grapheneos.gmscompat", "com.android.egg", "com.android.captiveportallogin", "com.android.stk", "app.vanadium.webview")
 
