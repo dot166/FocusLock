@@ -2,9 +2,8 @@ package io.github.dot166.focuslock.core
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import io.github.dot166.jlib.app.jLIBCoreApp
 
-class Application : jLIBCoreApp() {
+class Application : android.app.Application() {
     companion object {
         const val BLOCKER_CHANNEL_ID = "AppBlockServiceChannel"
     }

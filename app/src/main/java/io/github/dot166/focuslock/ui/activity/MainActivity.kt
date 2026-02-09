@@ -1,159 +1,90 @@
 package io.github.dot166.focuslock.ui.activity
 
-import android.Manifest
-import android.accessibilityservice.AccessibilityService
-import android.content.ComponentName
-import android.content.Context
-import android.content.DialogInterface
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
-import android.text.TextUtils
 import android.util.Log
 import android.util.Pair
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.net.toUri
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.fragment.app.Fragment
 import androidx.preference.Preference
 import androidx.preference.SwitchPreferenceCompat
 import com.android.settingslib.preference.PreferenceFragment
+import com.android.settingslib.widget.BannerMessagePreference
 import com.android.settingslib.widget.ButtonPreference2
 import com.android.settingslib.widget.CircularGraphicPreference
 import com.android.settingslib.widget.UntitledPreferenceCategory
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.dot166.focuslock.R
 import io.github.dot166.focuslock.core.AppBlockService
-import io.github.dot166.focuslock.core.AppBlockerAccessibilityService
 import io.github.dot166.focuslock.core.BootCompletedReceiver
+import io.github.dot166.focuslock.ui.fragments.AppUsageFragment
+import io.github.dot166.focuslock.ui.fragments.BlockManageFragment
+import io.github.dot166.focuslock.ui.fragments.PermissionFragment
+import io.github.dot166.focuslock.ui.fragments.WeekFragment
+import io.github.dot166.focuslock.utils.PermissionUtils
 import io.github.dot166.focuslock.utils.UsageUtils
-import io.github.dot166.focuslock.utils.UsageUtils.hasUsageAccess
 import io.github.dot166.jlib.app.jConfigActivity
-import io.github.dot166.jlib.utils.VersionUtils.isAtLeastT
 import kotlinx.coroutines.DelicateCoroutinesApi
 
 class MainActivity: jConfigActivity() {
-    private var notificationPermissionLauncher: ActivityResultLauncher<String>? = null
     override fun preferenceFragment(): PreferenceFragment {
         return PrefFragment()
-    }
-    fun isAccessibilityServiceEnabled(context: Context, serviceClass: Class<out AccessibilityService>): Boolean {
-        val accessibilityEnabled = try {
-            Settings.Secure.getInt(context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)
-        } catch (e: Settings.SettingNotFoundException) {
-            e.printStackTrace()
-            0
-        }
-
-        if (accessibilityEnabled == 0) {
-            return false
-        }
-
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-
-        if (enabledServices == null || enabledServices.isEmpty()) {
-            return false
-        }
-
-        val selfComponent = ComponentName(context, serviceClass).flattenToString()
-        val splitter = TextUtils.SimpleStringSplitter(':')
-        splitter.setString(enabledServices)
-
-        while (splitter.hasNext()) {
-            if (splitter.next().equals(selfComponent, ignoreCase = true)) {
-                return true
-            }
-        }
-
-        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!hasUsageAccess(this)) {
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-            Toast.makeText(this, "Please grant Usage Access permission", Toast.LENGTH_LONG).show()
-            return
-        }
-        if (!Settings.canDrawOverlays(this)) {
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-            Toast.makeText(this, "Please grant overlay permission", Toast.LENGTH_LONG).show()
-            return
-        }
-        val packageName = applicationContext.packageName
-        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
-        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-            val intent = Intent()
-            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-            intent.setData(("package:$packageName").toUri())
-            startActivity(intent)
-            return
-        }
-        if (!isAccessibilityServiceEnabled(this, AppBlockerAccessibilityService::class.java)) {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            startActivity(intent)
-            Toast.makeText(this, "Please find and enable the " + getString(R.string.app_name) + " service.", Toast.LENGTH_LONG).show()
-        }
-        notificationPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean? ->
-            if (!isGranted!!) {
-                if (isAtLeastT) {
-                    if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                        showNotificationPermissionRationale()
-                    } else {
-                        showSettingDialog()
-                    }
-                }
-            }
-        }
-        forceNotificationPermission()
         val intent = Intent(this, AppBlockService::class.java)
         startForegroundService(intent)
     }
 
     class PrefFragment : PreferenceFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
         var graph: CircularGraphicPreference? = null
+        var group: UntitledPreferenceCategory? = null
+        @SuppressLint("Recycle")
         @OptIn(DelicateCoroutinesApi::class)
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            val screen = preferenceManager.createPreferenceScreen(context!!)
-            val group0 = UntitledPreferenceCategory(context!!)
+            val screen = preferenceManager.createPreferenceScreen(requireContext())
+            val group0 = UntitledPreferenceCategory(requireContext())
+            group = UntitledPreferenceCategory(requireContext())
+            screen.addPreference(group!!)
             screen.addPreference(group0)
-            graph = CircularGraphicPreference(context!!)
+            graph = CircularGraphicPreference(requireContext())
             group0.addPreference(graph!!)
-            val buttonPref = ButtonPreference2(context!!)
+            val buttonPref = ButtonPreference2(requireContext())
             buttonPref.setButtonStyle(ButtonPreference2.TYPE_OUTLINE, ButtonPreference2.SIZE_EXTRA_LARGE)
             buttonPref.setOnClickListener {
-                context!!.startActivity(Intent(context, AppUsageActivity::class.java))
+                val args: Bundle = buttonPref.getExtras()
+                val fragment: Fragment = requireActivity().supportFragmentManager.getFragmentFactory().instantiate(
+                    requireActivity().classLoader, AppUsageFragment().javaClass.name
+                )
+                fragment.setArguments(args)
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(com.android.settingslib.collapsingtoolbar.R.id.content_frame, fragment).addToBackStack(null).commit()
             }
             buttonPref.setTitle(getString(R.string.view_app_usage))
             group0.addPreference(buttonPref)
-            val group1 = UntitledPreferenceCategory(context!!)
+            val group1 = UntitledPreferenceCategory(requireContext())
             screen.addPreference(group1)
-            val manageBlockListPreference = Preference(context!!)
-            manageBlockListPreference.onPreferenceClickListener = Preference.OnPreferenceClickListener { preference: Preference? ->
-                startActivity(Intent(preference!!.context, BlockManageActivity::class.java))
-                true
-            }
+            val manageBlockListPreference = Preference(requireContext())
+            manageBlockListPreference.fragment = BlockManageFragment().javaClass.name
             manageBlockListPreference.setTitle(R.string.manage_blocked_apps_and_app_limits)
-            val drawable = context!!.getDrawable(R.drawable.hourglass_empty_24px)
-            drawable!!.setTint(context!!.obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.colorControlNormal)).getColor(0, 0))
+            val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.hourglass_empty_24px)
+            drawable!!.setTint(requireContext().obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.colorControlNormal)).getColor(0, 0))
             manageBlockListPreference.icon = drawable
             group1.addPreference(manageBlockListPreference)
-            val showInL3Pref = SwitchPreferenceCompat(context!!)
+            val weekFragmentPreference = Preference(requireContext())
+            weekFragmentPreference.fragment = WeekFragment().javaClass.name
+            weekFragmentPreference.title = getString(R.string.show_usage_for_past_week)
+            weekFragmentPreference.icon = drawable
+            group1.addPreference(weekFragmentPreference)
+            val showInL3Pref = SwitchPreferenceCompat(requireContext())
             showInL3Pref.key = "show_icon_in_l3"
-            showInL3Pref.icon = context!!.packageManager.getApplicationIcon(context!!.packageName)
+            showInL3Pref.icon = requireContext().packageManager.getApplicationIcon(requireContext().packageName)
             showInL3Pref.title = getString(R.string.show_app_icon_in_launcher)
-            showInL3Pref.setDefaultValue(BootCompletedReceiver.readShowLauncherIcon(preferenceManager.sharedPreferences!!, context!!))
+            showInL3Pref.setDefaultValue(BootCompletedReceiver.readShowLauncherIcon(preferenceManager.sharedPreferences!!, requireContext()))
             val launcherIntent = Intent(Intent.ACTION_MAIN)
             launcherIntent.addCategory(Intent.CATEGORY_HOME)
             launcherIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -161,9 +92,9 @@ class MainActivity: jConfigActivity() {
                 getString(
                     R.string.show_icon_summary,
                     getString(R.string.app_name),
-                    context!!.packageManager.getApplicationLabel(
-                        context!!.packageManager.getApplicationInfo(
-                            context!!.packageManager.resolveActivity(
+                    requireContext().packageManager.getApplicationLabel(
+                        requireContext().packageManager.getApplicationInfo(
+                            requireContext().packageManager.resolveActivity(
                                 launcherIntent,
                                 PackageManager.MATCH_DEFAULT_ONLY
                             )!!.activityInfo.packageName, 0
@@ -171,7 +102,7 @@ class MainActivity: jConfigActivity() {
                     )
                 )
             )
-            val appInfo = context!!.applicationInfo
+            val appInfo = requireContext().applicationInfo
             val isApplicationInSystemImage =
                 (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
             showInL3Pref.isEnabled = isApplicationInSystemImage
@@ -184,13 +115,14 @@ class MainActivity: jConfigActivity() {
             key: String?
         ) {
             if (key == "show_icon_in_l3") {
-                BootCompletedReceiver.toggleAppIcon(context!!)
+                BootCompletedReceiver.toggleAppIcon(requireContext())
             }
         }
+        @SuppressLint("DefaultLocale")
         override fun onResume() {
             super.onResume()
             val map = mutableMapOf<String, Pair<Int, String>>()
-            val stats = UsageUtils.getUsages(context!!, true)
+            val stats = UsageUtils.getUsages(requireContext(), true)
             if (stats.isNotEmpty()) {
                 for (usageStats in stats) {
                     Log.d("UsageStats", "Package: ${usageStats.first}, Foreground Time (ms): ${usageStats.second}")
@@ -200,7 +132,7 @@ class MainActivity: jConfigActivity() {
                 val top3Apps = stats.take(3)  // Take first 3 items after sorting
 
                 var othersTime = 0
-                val packageManager = context!!.packageManager
+                val packageManager = requireContext().packageManager
                 top3Apps.forEachIndexed { index, usageStats ->
                     // Add top 3 apps to the map
                     val totalTime = usageStats.second!!
@@ -243,41 +175,27 @@ class MainActivity: jConfigActivity() {
             val minutes = ((total % (1000 * 60 * 60)) / (1000 * 60))
             val seconds = ((total % (1000 * 60)) / 1000)
             val timeString = String.format("\n%02dh%02dm%02ds", hours, minutes, seconds)
-            graph!!.setCentreLabel(context!!.getString(R.string.scrntime_label_centre, timeString))
+            graph!!.setCentreLabel(requireContext().getString(R.string.scrntime_label_centre, timeString))
             graph!!.setUsages(map)
-        }
-    }
-    private fun showSettingDialog() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.notification_permission)
-            .setMessage(getString(R.string.settings_notif_dialog, getString(R.string.app_name)))
-            .setPositiveButton(
-                io.github.dot166.jlib.R.string.ok
-            ) { _: DialogInterface?, _: Int ->
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                intent.setData(("package:$packageName").toUri())
-                startActivity(intent)
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-    private fun showNotificationPermissionRationale() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.notification_permission)
-            .setMessage(getString(R.string.notif_dialog, getString(R.string.app_name)))
-            .setPositiveButton(
-                R.string.yes
-            ) { _: DialogInterface?, _: Int ->
-                if (isAtLeastT) {
-                    notificationPermissionLauncher!!.launch(Manifest.permission.POST_NOTIFICATIONS)
+            group!!.removeAll()
+            if (!PermissionUtils.hasAllPermissions(requireContext())) {
+                val bannerMessagePreference = BannerMessagePreference(requireContext())
+                bannerMessagePreference.title = getString(R.string.missing_perms_title, getString(R.string.app_name))
+                bannerMessagePreference.setAttentionLevel(BannerMessagePreference.AttentionLevel.HIGH)
+                bannerMessagePreference.setPositiveButtonText(getString(R.string.grant_required_permissions))
+                bannerMessagePreference.setPositiveButtonEnabled(true)
+                bannerMessagePreference.setPositiveButtonVisible(true)
+                bannerMessagePreference.setPositiveButtonOnClickListener {
+                    val args: Bundle = bannerMessagePreference.getExtras()
+                    val fragment: Fragment = requireActivity().supportFragmentManager.getFragmentFactory().instantiate(
+                        requireActivity().classLoader, PermissionFragment().javaClass.name
+                    )
+                    fragment.setArguments(args)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(com.android.settingslib.collapsingtoolbar.R.id.content_frame, fragment).addToBackStack(null).commit()
                 }
+                group!!.addPreference(bannerMessagePreference)
             }
-            .setNegativeButton(R.string.no, null)
-            .show()
-    }
-    fun forceNotificationPermission() {
-        if (isAtLeastT) {
-            notificationPermissionLauncher!!.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 }

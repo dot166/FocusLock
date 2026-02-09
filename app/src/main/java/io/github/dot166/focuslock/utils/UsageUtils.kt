@@ -41,7 +41,7 @@ object UsageUtils {
             if (currentEvent.eventType == UsageEvents.Event.ACTIVITY_RESUMED ||
                 currentEvent.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
             ) {
-                foregroundEventTimeMap.put(packageName, eventTime)
+                foregroundEventTimeMap[packageName] = eventTime
             } else if (currentEvent.eventType == UsageEvents.Event.ACTIVITY_PAUSED ||
                 currentEvent.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
             ) {
@@ -49,7 +49,7 @@ object UsageUtils {
                     val startTime: Long = foregroundEventTimeMap[packageName]!!
                     val timeInForeground = eventTime - startTime
                     val currentTotal: Long = appUsageTimeMap.getOrDefault(packageName, 0L)!!
-                    appUsageTimeMap.put(packageName, currentTotal + timeInForeground)
+                    appUsageTimeMap[packageName] = currentTotal + timeInForeground
                     foregroundEventTimeMap.remove(packageName)
                 }
             }
@@ -59,7 +59,7 @@ object UsageUtils {
             val startTime: Long = entry.value!!
             val timeInForeground = System.currentTimeMillis() - startTime
             val currentTotal: Long = appUsageTimeMap.getOrDefault(packageName, 0L)!!
-            appUsageTimeMap.put(packageName, currentTotal + timeInForeground)
+            appUsageTimeMap[packageName] = currentTotal + timeInForeground
         }
         var totalScreenTimeMs: Long = 0
         for (time in appUsageTimeMap.values) {
@@ -91,5 +91,70 @@ object UsageUtils {
             ctx.packageName
         )
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun dayBounds(daysAgo: Int): Pair<Long, Long> {
+        val cal = Calendar.getInstance()
+        cal.timeZone = TimeZone.getDefault()
+
+        cal.add(Calendar.DAY_OF_YEAR, -daysAgo)
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val start = cal.timeInMillis
+
+        cal.set(Calendar.HOUR_OF_DAY, 23)
+        cal.set(Calendar.MINUTE, 59)
+        cal.set(Calendar.SECOND, 59)
+        cal.set(Calendar.MILLISECOND, 999)
+        val end = cal.timeInMillis
+
+        return start to end
+    }
+
+
+    fun getWeeklyScreenTime(ctx: Context): List<Long> {
+        val usm = ctx.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val results = ArrayList<Long>(7)
+
+        for (daysAgo in 6 downTo 0) {
+            val (startTime, endTime) = dayBounds(daysAgo)
+
+            var totalForegroundTime = 0L
+            val foregroundMap = HashMap<String, Long>()
+
+            val usageEvents = usm.queryEvents(startTime, endTime)
+            val event = UsageEvents.Event()
+
+            while (usageEvents.getNextEvent(event)) {
+                val pkg = event.packageName ?: continue
+                val t = event.timeStamp
+
+                when (event.eventType) {
+                    UsageEvents.Event.ACTIVITY_RESUMED,
+                    UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                        foregroundMap[pkg] = t
+                    }
+
+                    UsageEvents.Event.ACTIVITY_PAUSED,
+                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                        val start = foregroundMap.remove(pkg) ?: continue
+                        val duration = (t - start).coerceAtLeast(0L)
+                        totalForegroundTime += duration
+                    }
+                }
+            }
+
+            // Handle apps still in foreground at end of day
+            for (start in foregroundMap.values) {
+                val duration = (endTime - start).coerceAtLeast(0L)
+                totalForegroundTime += duration
+            }
+
+            results.add(totalForegroundTime)
+        }
+
+        return results
     }
 }

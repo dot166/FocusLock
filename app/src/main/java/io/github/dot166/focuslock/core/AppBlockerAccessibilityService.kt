@@ -1,10 +1,12 @@
 package io.github.dot166.focuslock.core
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 
+@SuppressLint("AccessibilityPolicy")
 class AppBlockerAccessibilityService : AccessibilityService() {
 
     private var currentApp: String? = null

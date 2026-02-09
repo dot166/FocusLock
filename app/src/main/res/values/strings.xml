@@ -15,4 +15,8 @@
     <string name="no">No</string>
     <string name="settings_notif_dialog">The Notification permission is required for <xliff:g id="APP_NAME">%1$s</xliff:g>, Please allow notification permission from settings</string>
     <string name="notif_dialog">The Notification permission is required for <xliff:g id="APP_NAME">%1$s</xliff:g>, would you like to grant it</string>
+    <string name="settings_summary">Keep track of screen time</string>
+    <string name="missing_perms_title"><xliff:g id="APP_NAME">%1$s</xliff:g> is missing some permissions</string>
+    <string name="grant_required_permissions">Grant required permissions</string>
+    <string name="show_usage_for_past_week">Show usage for past week</string>
 </resources>

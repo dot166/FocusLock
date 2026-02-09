@@ -9,7 +9,8 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
+        tools:ignore="ForegroundServicesPolicy" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
 
@@ -18,8 +19,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/j.Theme"
-        tools:replace="android:name">
+        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
 
         <activity android:name=".ui.activity.MainActivity"
             android:exported="true">
@@ -33,15 +33,21 @@
             <meta-data
                 android:name="com.android.settings.group_key"
                 android:value="top_level_security_privacy_category"/>
-            <!--<meta-data
+            <meta-data
                 android:name="com.android.settings.summary"
-                android:resource="@string/settings_summary"/>-->
+                android:resource="@string/settings_summary"/>
             <meta-data
                 android:name="com.android.settings.title"
                 android:resource="@string/settings_entry_point_title"/>
-            <!--<meta-data
+            <meta-data
                 android:name="com.android.settings.icon"
-                android:resource="@mipmap/ic_launcher_j"/>-->
+                android:resource="@mipmap/ic_launcher"/>
+            <meta-data
+                android:name="com.android.settings.icon_color_scheme"
+                android:value="pink"/>
+            <meta-data
+                android:name="com.android.settings.bg.hint"
+                android:resource="@color/settings_background_icon_color"/>
             <meta-data
                 android:name="com.android.settings.profile"
                 android:value="all_profiles"/>
@@ -62,12 +68,6 @@
             android:showOnLockScreen="true"
             android:turnScreenOn="true" />
 
-        <activity android:name=".ui.activity.BlockManageActivity"
-            android:exported="false"/>
-
-        <activity android:name=".ui.activity.AppUsageActivity"
-            android:exported="false"/>
-
         <service android:name=".core.AppBlockService"
             android:foregroundServiceType="specialUse"/>
 
@@ -84,7 +84,8 @@
             android:name=".core.AppBlockerAccessibilityService"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            tools:ignore="AccessibilityPolicy">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
