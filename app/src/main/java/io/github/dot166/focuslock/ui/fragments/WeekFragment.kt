@@ -38,16 +38,11 @@ class WeekFragment : PreferenceFragment() {
 
         for (i in 0 until stats.size) {
             val totalTime = stats[i]
-            val millisPerSecond = 1000L
-            val millisPerMinute = 60L * millisPerSecond
-            val millisPerHour   = 60L * millisPerMinute
-            val millisPerDay    = 24L * millisPerHour
-            val days = totalTime / millisPerDay
-            val hours = (totalTime % millisPerDay) / millisPerHour
-            val minutes = (totalTime % millisPerHour) / millisPerMinute
-            val seconds = (totalTime % millisPerMinute) / millisPerSecond
+            val hours = (totalTime / (1000 * 60 * 60)).toInt()
+            val minutes = ((totalTime % (1000 * 60 * 60)) / (1000 * 60)).toInt()
+            val seconds = ((totalTime % (1000 * 60)) / 1000).toInt()
 
-            val timeString = "${days}d %02dh %02dm %02ds".format(hours, minutes, seconds)
+            val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
             val appUsageItemPref = Preference(requireContext())
             appUsageItemPref.summary = timeString
             appUsageItemPref.title = dayNameFromDaysAgo(i)
