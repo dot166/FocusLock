@@ -10,6 +10,8 @@ android_library {
 
     manifest: "src/main/AndroidManifest.xml",
 
+    product_specific: true,
+
     srcs: [
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
