@@ -121,7 +121,7 @@ object UsageUtils {
         for (daysAgo in 6 downTo 0) {
             val (startTime, endTime) = dayBounds(daysAgo)
 
-            var totalForegroundTime = 0L
+            val appUsageTimeMap = HashMap<String, Long>()
             val foregroundMap = HashMap<String, Long>()
 
             val usageEvents = usm.queryEvents(startTime, endTime)
@@ -140,19 +140,27 @@ object UsageUtils {
                     UsageEvents.Event.ACTIVITY_PAUSED,
                     UsageEvents.Event.MOVE_TO_BACKGROUND -> {
                         val start = foregroundMap.remove(pkg) ?: continue
-                        val duration = (t - start).coerceAtLeast(0L)
-                        totalForegroundTime += duration
+                        val duration = t - start
+                        appUsageTimeMap[pkg] =
+                            (appUsageTimeMap[pkg] ?: 0L) + duration
                     }
                 }
             }
 
-            // Handle apps still in foreground at end of day
-            for (start in foregroundMap.values) {
-                val duration = (endTime - start).coerceAtLeast(0L)
-                totalForegroundTime += duration
+            for ((pkg, start) in foregroundMap) {
+                val duration = endTime - start
+                appUsageTimeMap[pkg] =
+                    (appUsageTimeMap[pkg] ?: 0L) + duration
             }
 
-            results.add(totalForegroundTime)
+            val totalForDay = appUsageTimeMap
+                .filter { (pkg, _) ->
+                    BlockUtils.isAllowedToMonitor(ctx, pkg, true)
+                }
+                .values
+                .sum()
+
+            results.add(totalForDay)
         }
 
         return results
