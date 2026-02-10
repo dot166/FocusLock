@@ -38,5 +38,5 @@ kotlin {
 }
 
 dependencies {
-    implementation("io.github.dot166:j-Lib:104.2.17")
+    implementation("io.github.dot166:j-Lib:104.2.22")
 }
