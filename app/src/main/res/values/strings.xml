@@ -7,7 +7,7 @@
     <string name="stay_focused_you_got_this">Stay focused. You got this.</string>
     <string name="show_app_icon_in_launcher">Show app icon in Launcher</string>
     <string name="show_icon_summary">show icon for <xliff:g id="APP_NAME">%1$s</xliff:g> in <xliff:g id="LAUNCHER_APP_NAME">%2$s</xliff:g></string>
-    <string name="settings_entry_point_title">\@string/app_name</string>
+    <string name="settings_entry_point_title">@string/app_name</string>
     <string name="accessibility_service_description">Service to allow the time check to only run when a restricted app is open</string>
     <string name="yes">Yes</string>
     <string name="cancel">Cancel</string>
