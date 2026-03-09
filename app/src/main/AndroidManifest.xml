@@ -42,7 +42,10 @@
                 android:resource="@string/settings_entry_point_title"/>
             <meta-data
                 android:name="com.android.settings.icon"
-                android:resource="@mipmap/ic_launcher"/>
+                android:resource="@mipmap/ic_launcher_foreground"/>
+            <meta-data
+                android:name="com.android.settings.icon_color_scheme"
+                android:value="pink"/>
             <meta-data
                 android:name="com.android.settings.bg.hint"
                 android:resource="@color/settings_background_icon_color"/>
