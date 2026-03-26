@@ -1,10 +1,30 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val useKeystoreProperties = keystorePropertiesFile.canRead()
+val keystoreProperties = Properties()
+if (useKeystoreProperties) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
 plugins {
     id("com.android.application")
 }
 
 android {
+    if (useKeystoreProperties) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                enableV4Signing = true
+            }
+        }
+    }
     namespace = "io.github.dot166.focuslock"
     compileSdk = 36
 
@@ -23,6 +43,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (useKeystoreProperties) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
@@ -38,5 +61,5 @@ kotlin {
 }
 
 dependencies {
-    implementation("io.github.dot166:j-Lib:104.2.22")
+    implementation("io.github.dot166:j-Lib:104.2.24")
 }
