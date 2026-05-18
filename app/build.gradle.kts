@@ -10,7 +10,7 @@ if (useKeystoreProperties) {
 }
 
 plugins {
-    id("com.android.application")
+    alias(libs.plugins.android.application)
 }
 
 android {
@@ -26,14 +26,18 @@ android {
         }
     }
     namespace = "io.github.dot166.focuslock"
-    compileSdk = 36
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "io.github.dot166.focuslock"
-        minSdk = 30
+        minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = versionCode.toString()
     }
 
     buildTypes {
@@ -46,6 +50,9 @@ android {
             if (useKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+        named("debug") {
+            applicationIdSuffix = ".DEV"
         }
     }
     compileOptions {
@@ -61,5 +68,5 @@ kotlin {
 }
 
 dependencies {
-    implementation("io.github.dot166:j-Lib:104.2.24")
+    implementation(libs.j.lib)
 }

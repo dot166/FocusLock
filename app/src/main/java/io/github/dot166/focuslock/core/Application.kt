@@ -2,8 +2,9 @@ package io.github.dot166.focuslock.core
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import io.github.dot166.jlib.app.RestorableSettingsApplication
 
-class Application : android.app.Application() {
+class Application : RestorableSettingsApplication() {
     companion object {
         const val BLOCKER_CHANNEL_ID = "AppBlockServiceChannel"
     }

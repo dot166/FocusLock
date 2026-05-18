@@ -23,7 +23,6 @@ import io.github.dot166.focuslock.core.BootCompletedReceiver
 import io.github.dot166.focuslock.ui.fragments.AppUsageFragment
 import io.github.dot166.focuslock.ui.fragments.BlockManageFragment
 import io.github.dot166.focuslock.ui.fragments.PermissionFragment
-import io.github.dot166.focuslock.ui.fragments.WeekFragment
 import io.github.dot166.focuslock.utils.PermissionUtils
 import io.github.dot166.focuslock.utils.UsageUtils
 import io.github.dot166.jlib.app.jConfigActivity
@@ -75,11 +74,6 @@ class MainActivity: jConfigActivity() {
             drawable!!.setTint(requireContext().obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.colorControlNormal)).getColor(0, 0))
             manageBlockListPreference.icon = drawable
             group1.addPreference(manageBlockListPreference)
-            val weekFragmentPreference = Preference(requireContext())
-            weekFragmentPreference.fragment = WeekFragment().javaClass.name
-            weekFragmentPreference.title = getString(R.string.show_usage_for_past_week)
-            weekFragmentPreference.icon = drawable
-            group1.addPreference(weekFragmentPreference)
             val showInL3Pref = SwitchPreferenceCompat(requireContext())
             showInL3Pref.key = "show_icon_in_l3"
             showInL3Pref.icon = requireContext().packageManager.getApplicationIcon(requireContext().packageName)
