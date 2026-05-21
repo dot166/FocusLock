@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-jLib = "104.2.31"
+jLib = "104.2.32"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
