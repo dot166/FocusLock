@@ -10,7 +10,6 @@ import android.os.IBinder
 import android.os.Process
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.preference.PreferenceManager
 import io.github.dot166.focuslock.R
 import io.github.dot166.focuslock.ui.activity.BlockScreenActivity
 import io.github.dot166.focuslock.ui.activity.MainActivity
@@ -20,7 +19,7 @@ class AppBlockService : Service() {
     private var backgroundHandlerThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
     private var currentAppToCheck: String? = null
-    private var restrictedAppsSet: Set<String> = mutableSetOf()
+    private var restrictedApps: List<RestrictedApp> = mutableListOf()
 
     companion object {
         const val ACTION_APP_SWITCH = "ACTION_APP_SWITCH"
@@ -58,8 +57,7 @@ class AppBlockService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(javaClass.simpleName, "Service Command Received")
-        restrictedAppsSet = PreferenceManager.getDefaultSharedPreferences(this)
-            .getStringSet("blockedApps", mutableSetOf<String>())!!
+        restrictedApps = RestrictedApp.getRestrictedApps()
         when (intent?.action) {
             ACTION_APP_SWITCH -> {
                 val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
@@ -76,8 +74,8 @@ class AppBlockService : Service() {
 
     private fun handleAppSwitch(newPackageName: String) {
         backgroundHandler?.removeCallbacks(checkRunnable)
-        val isRestricted = restrictedAppsSet.any {
-            RestrictedApp.fromString(it).packageName == newPackageName
+        val isRestricted = restrictedApps.any {
+            packageName == newPackageName
         }
         if (isRestricted) {
             Log.d(javaClass.simpleName, "Monitoring app: $newPackageName")
@@ -96,13 +94,12 @@ class AppBlockService : Service() {
                 backgroundHandler?.removeCallbacks(this)
                 return
             }
-            val restrictedApps = restrictedAppsSet.map { RestrictedApp.fromString(it) }
             val usages = UsageUtils.getUsages(this@AppBlockService, false)
             val hashmap = hashMapOf<String, Long>()
-            for (i in 0 until usages.size) {
-                val totalTime = usages[i].second!!
+            for (element in usages) {
+                val totalTime = element.second!!
                 val minutes = (totalTime / (1000 * 60))
-                hashmap[usages[i].first!!] = minutes
+                hashmap[element.first!!] = minutes
             }
             for (restrictedApp in restrictedApps) {
                 if (restrictedApp.packageName != topApp) continue

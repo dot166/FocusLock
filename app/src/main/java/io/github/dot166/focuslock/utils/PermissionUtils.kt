@@ -58,4 +58,5 @@ object PermissionUtils {
         }
         return hasUsageAccess(ctx) && Settings.canDrawOverlays(ctx) && pm.isIgnoringBatteryOptimizations(packageName) && isAccessibilityServiceEnabled(ctx, AppBlockerAccessibilityService::class.java) && notifPermGranted
     }
+    data class Permission(val name: String, val granted: Boolean, val grant: (() -> Unit))
 }

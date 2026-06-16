@@ -66,8 +66,8 @@ object UsageUtils {
             totalScreenTimeMs += time!!
         }
         val stats = appUsageTimeMap.toList()
-        for (i in 0 until stats.size) {
-            Log.i(javaClass.simpleName, stats[i].first.toString() + "=" + stats[i].second)
+        for (element in stats) {
+            Log.i(javaClass.simpleName, element.first.toString() + "=" + element.second)
         }
         if (stats.isNotEmpty()) {
             val filteredStats = stats.filter { usageStats ->

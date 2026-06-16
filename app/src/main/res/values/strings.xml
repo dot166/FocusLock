@@ -9,13 +9,12 @@
     <string name="show_icon_summary">show icon for <xliff:g id="APP_NAME">%1$s</xliff:g> in <xliff:g id="LAUNCHER_APP_NAME">%2$s</xliff:g></string>
     <string name="settings_entry_point_title">@string/app_name</string>
     <string name="accessibility_service_description">Service to allow the time check to only run when a restricted app is open</string>
-    <string name="yes">Yes</string>
-    <string name="cancel">Cancel</string>
-    <string name="notification_permission">Notification Permission</string>
-    <string name="no">No</string>
-    <string name="settings_notif_dialog">The Notification permission is required for <xliff:g id="APP_NAME">%1$s</xliff:g>, Please allow notification permission from settings</string>
-    <string name="notif_dialog">The Notification permission is required for <xliff:g id="APP_NAME">%1$s</xliff:g>, would you like to grant it</string>
     <string name="settings_summary">Keep track of screen time</string>
     <string name="missing_perms_title"><xliff:g id="APP_NAME">%1$s</xliff:g> is missing some permissions</string>
     <string name="grant_required_permissions">Grant required permissions</string>
+    <string name="others">Others</string>
+    <string name="allowed">Allowed</string>
+    <string name="blocked">Blocked</string>
+    <string name="permissions">Permissions</string>
+    <string name="please_find_and_enable_the_service">Please find and enable the %1$s service.</string>
 </resources>

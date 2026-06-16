@@ -2,6 +2,7 @@ package io.github.dot166.focuslock.core
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 import io.github.dot166.jlib.app.RestorableSettingsApplication
 
 class Application : RestorableSettingsApplication() {
@@ -12,6 +13,7 @@ class Application : RestorableSettingsApplication() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        setSpaEnvironment(FocusLockSpaEnvironment(this))
     }
 
     private fun createNotificationChannel() {

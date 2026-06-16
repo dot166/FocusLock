@@ -4,12 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.preference.PreferenceManager
+import com.android.settingslib.datastore.SharedPreferencesStorage
 import io.github.dot166.focuslock.ui.activity.LauncherActivity
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 
 class BootCompletedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -43,10 +43,14 @@ class BootCompletedReceiver : BroadcastReceiver() {
                 BootCompletedReceiver::class.java.getSimpleName(),
                 "toggleAppIcon() : FLAG_SYSTEM = $isSystemApp"
             )
-            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             context.packageManager.setComponentEnabledSetting(
                 ComponentName(context, LauncherActivity::class.java),
-                if (readShowLauncherIcon(prefs, context))
+                if (readShowLauncherIcon(
+                        DefaultSharedPrefsManager.getSharedPreferencesStorage(
+                            context
+                        ), context
+                    )
+                )
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED
                 else
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -55,7 +59,7 @@ class BootCompletedReceiver : BroadcastReceiver() {
         }
 
         fun readShowLauncherIcon(
-            prefs: SharedPreferences,
+            prefs: SharedPreferencesStorage,
             context: Context
         ): Boolean {
             if (!prefs.contains("show_icon_in_l3")) {
@@ -65,7 +69,7 @@ class BootCompletedReceiver : BroadcastReceiver() {
                 // Default value
                 return !isApplicationInSystemImage
             }
-            return prefs.getBoolean("show_icon_in_l3", false)
+            return prefs.getBoolean("show_icon_in_l3") ?: false
         }
     }
 }

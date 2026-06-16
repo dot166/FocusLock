@@ -1,9 +1,13 @@
 [versions]
 agp = "9.2.1"
-jLib = "104.2.31"
+jLib = "104.3.6"
+kotlin = "2.4.0"
+permissionsCompose = "1.0.5"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [libraries]
 j-lib = { module = "io.github.dot166:j-Lib", version.ref = "jLib" }
+permissions-compose = { group = "com.meticha", name = "permissions_compose", version.ref = "permissionsCompose" }

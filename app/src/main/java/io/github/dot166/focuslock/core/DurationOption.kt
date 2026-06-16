@@ -1,5 +1,8 @@
 package io.github.dot166.focuslock.core
 
+import com.android.settingslib.spa.framework.common.SpaEnvironmentFactory
+import io.github.dot166.focuslock.R
+
 data class DurationOption(
     val label: String,
     val minutes: Long
@@ -10,8 +13,8 @@ data class DurationOption(
 }
 
 val durationOptions = listOf(
-    DurationOption("Allowed", -1),
-    DurationOption("Blocked", 0),
+    DurationOption(SpaEnvironmentFactory.instance.appContext.getString(R.string.allowed), -1),
+    DurationOption(SpaEnvironmentFactory.instance.appContext.getString(R.string.blocked), 0),
     DurationOption("5m", 5),
     DurationOption("10m", 10),
     DurationOption("15m", 15),
@@ -33,9 +36,9 @@ val durationOptions = listOf(
 )
 
 fun findDuration(allowedTimeInMinutes: Long): DurationOption {
-    for (i in 0 until durationOptions.size) {
-        if (durationOptions[i].minutes == allowedTimeInMinutes) {
-            return durationOptions[i]
+    for (element in durationOptions) {
+        if (element.minutes == allowedTimeInMinutes) {
+            return element
         }
     }
     return durationOptions[0]
@@ -46,8 +49,8 @@ fun getDuration(position: Int): DurationOption {
 }
 
 fun getPosition(durationOption: DurationOption): Int {
-    for (i in 0 until durationOptions.size) {
-        if (durationOptions[i] == durationOption) {
+    for ((i, element) in durationOptions.withIndex()) {
+        if (element == durationOption) {
             return i
         }
     }
