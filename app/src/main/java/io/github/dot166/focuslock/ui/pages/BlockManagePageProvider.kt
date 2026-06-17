@@ -155,6 +155,7 @@ object BlockManagePageProvider : SettingsPageProvider {
         val list = initialList.toMutableList()
         list.findByPackageName(pName).allowedTimeInMinutes = allowedTimeInMinutes
         RestrictedApp.saveRestrictedApps(list)
+        loadApps()
     }
 
 }

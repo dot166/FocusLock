@@ -75,7 +75,7 @@ class AppBlockService : Service() {
     private fun handleAppSwitch(newPackageName: String) {
         backgroundHandler?.removeCallbacks(checkRunnable)
         val isRestricted = restrictedApps.any {
-            packageName == newPackageName
+            it.packageName == newPackageName && it.allowedTimeInMinutes > -1
         }
         if (isRestricted) {
             Log.d(javaClass.simpleName, "Monitoring app: $newPackageName")

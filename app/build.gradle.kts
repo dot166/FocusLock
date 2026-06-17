@@ -37,7 +37,7 @@ android {
         applicationId = "io.github.dot166.focuslock"
         minSdk = 31
         targetSdk = 36
-        versionCode = 3
+        versionCode = 4
         versionName = versionCode.toString()
     }
 
