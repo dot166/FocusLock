@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-jLib = "104.3.6"
+jLib = "104.3.7"
 kotlin = "2.4.0"
 permissionsCompose = "1.0.5"
 
